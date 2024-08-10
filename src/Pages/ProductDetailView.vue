@@ -1,35 +1,7 @@
 <template>
   <div v-if="product">
-    <!-- Header Component -->
-    <header class="header">
-      <div class="header-content">
-        <div class="brand">
-          <img src="" alt="Brand Logo" class="brand-logo">
-          <h1 class="header-title">SwiftCart</h1>
-        </div>
-        <div class="header-right">
-          <h3 class="wishlist">
-            <a href="#" class="wishlist-btn">
-              <span class="wishlist-icon">♡</span>
-              <span class="wishlist-text">Wishlist</span>
-            </a>
-          </h3>
-          <div class="cart">
-            <a href="#">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="cart-icon">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-              </svg>
-            </a>
-            <span class="cart-badge">{{ cartCount }}</span>
-          </div>
-          <div class="login"><a href="#">Login</a></div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Product Detail Content -->
     <div class="product-detail">
-      <img :src="product.image" :alt="product.title" class="product-detail-image">
+      <img :src="product.image" :alt="product.title" class="product-detail-image" />
       <h2 class="product-detail-title">{{ product.title }}</h2>
       <p class="product-detail-description">{{ product.description }}</p>
       <p class="product-detail-price">${{ product.price }}</p>
@@ -41,7 +13,15 @@
         <span class="star" :class="{ 'filled': product.rating >= 4 }">&#9733;</span>
         <span class="star" :class="{ 'filled': product.rating >= 5 }">&#9733;</span>
       </div>
-      <button class="back-to-home" @click="goBackToHome">Back to Home</button>
+      <div class="button-container">
+        <button class="add-to-cart" @click="toggleCart">
+          {{ isInCart ? 'Remove from Cart' : 'Add to Cart' }}
+        </button>
+        <button class="favorites-btn" @click="toggleFavorites">
+          {{ isFavorite ? 'Remove from Favorites' : 'Add to Favorites' }}
+        </button>
+        <button class="back-to-home" @click="goBackToHome">Back to Home</button>
+      </div>
     </div>
   </div>
   <div v-else>
@@ -54,135 +34,117 @@ export default {
   data() {
     return {
       product: null,
-      cartCount: 0,
+      isFavorite: false,
+      isInCart: false,
     };
   },
-  async mounted() {
-    const id = this.$route.params.id;
-    const response = await fetch(`https://fakestoreapi.com/products/${id}`);
-    this.product = await response.json();
+  mounted() {
+    this.fetchProduct();
   },
   methods: {
+    async fetchProduct() {
+      const id = this.$route.params.id;
+      const response = await fetch(`https://fakestoreapi.com/products/${id}`);
+      const data = await response.json();
+      this.product = data;
+      this.checkCartStatus();
+    },
+    toggleCart() {
+      if (this.isInCart) {
+        this.removeFromCart();
+      } else {
+        this.addToCart();
+      }
+    },
     addToCart() {
-      this.cartCount++;
+      this.$emit('add-to-cart', this.product);
+      this.isInCart = true;
+    },
+    removeFromCart() {
+      this.$emit('remove-from-cart', this.product.id);
+      this.isInCart = false;
+    },
+    checkCartStatus() {
+      // Logic to check if the product is already in the cart.
+      this.isInCart = this.$root.cart.some(product => product.id === this.product.id);
+    },
+    toggleFavorites() {
+      this.isFavorite = !this.isFavorite;
     },
     goBackToHome() {
-      this.$router.push('/');
+      this.$router.push({ name: 'Home' });
     },
   },
 };
 </script>
 
 <style scoped>
-.header {
-  background: #f8f9fa;
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
+.button-container {
+  margin-top: 10px;
 }
 
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-}
-
-.brand-logo {
-  width: 50px;
-  height: auto;
+.add-to-cart, .favorites-btn, .back-to-home {
+  display: inline-block;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: bold;
+  text-align: center;
   margin-right: 10px;
 }
 
-.header-title {
-  font-size: 24px;
-  color: #333;
+.add-to-cart {
+  background-color: #007bff;
+  color: white;
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
+.favorites-btn {
+  background-color: #ff4081;
+  color: white;
 }
 
-.cart-icon {
-  width: 24px;
-  height: 24px;
-  margin-right: 10px;
+.back-to-home {
+  background-color: #6c757d;
+  color: white;
 }
 
-.cart-badge {
-  background: #007bff;
-  color: #fff;
-  border-radius: 50%;
-  padding: 0 10px;
-  margin-left: 5px;
+.rating .star {
+  color: #ffdd00;
+  font-size: 1.2em;
 }
 
-.login a {
-  color: #007bff;
-  text-decoration: none;
+.rating .star.filled {
+  color: #ffdd00;
 }
 
 .product-detail {
   padding: 20px;
-  text-align: center;
 }
 
 .product-detail-image {
   width: 100%;
   max-width: 300px;
-  height: auto;
-  margin-bottom: 20px;
 }
 
 .product-detail-title {
-  font-size: 24px;
-  color: #333;
+  font-size: 1.5em;
+  margin: 10px 0;
 }
 
 .product-detail-description {
-  margin: 10px 0;
-  font-size: 16px;
-  color: #666;
+  font-size: 1em;
+  margin-bottom: 10px;
 }
 
 .product-detail-price {
-  font-size: 18px;
-  color: #007bff;
+  font-size: 1.2em;
+  margin-bottom: 10px;
 }
 
 .product-detail-category {
-  font-size: 14px;
-  color: #777;
-}
-
-.back-to-home {
-  margin-top: 20px;
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.back-to-home:hover {
-  background-color: #0056b3;
-}
-
-.rating {
-  margin: 10px 0;
-}
-
-.star {
-  color: #ffd700;
-  font-size: 20px;
-}
-
-.star.filled {
-  color: #ffd700;
+  font-size: 1em;
+  margin-bottom: 10px;
 }
 </style>

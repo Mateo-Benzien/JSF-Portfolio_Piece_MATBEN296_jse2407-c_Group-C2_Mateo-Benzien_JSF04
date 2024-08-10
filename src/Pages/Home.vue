@@ -79,7 +79,9 @@
           </div>
           <p class="product-price">${{ product.price }}</p>
           <p class="product-category">{{ product.category }}</p>
-          <button class="add-to-cart" @click.stop="addToCart(product)">Add to Cart</button>
+          <button class="add-to-cart" @click.stop="toggleCart(product)">
+            {{ isInCart(product.id) ? 'Remove from Cart' : 'Add to Cart' }}
+          </button>
           <button class="favorites-btn">
             <span class="favorites-icon"></span>
           </button>
@@ -102,6 +104,7 @@ export default {
       categories: [],
       selectedCategory: '',
       selectedSort: '',
+      cart: [],
       cartCount: 0,
     };
   },
@@ -138,8 +141,23 @@ export default {
         this.products.sort((a, b) => b.price - a.price);
       }
     },
+    toggleCart(product) {
+      if (this.isInCart(product.id)) {
+        this.removeFromCart(product.id);
+      } else {
+        this.addToCart(product);
+      }
+    },
     addToCart(product) {
+      this.cart.push(product);
       this.cartCount++;
+    },
+    removeFromCart(productId) {
+      this.cart = this.cart.filter(product => product.id !== productId);
+      this.cartCount--;
+    },
+    isInCart(productId) {
+      return this.cart.some(product => product.id === productId);
     },
     goToProduct(id) {
       this.$router.push({ name: 'ProductDetailView', params: { id } });
