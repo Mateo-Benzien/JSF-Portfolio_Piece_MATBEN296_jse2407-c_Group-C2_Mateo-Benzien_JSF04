@@ -37,7 +37,7 @@
         </div>
       </div>
     </header>
-                                            
+
     <!-- Filter and Sort Wrapper -->
     <div class="filter-sort-container">
       <!-- Filter Section -->

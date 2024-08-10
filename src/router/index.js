@@ -3,13 +3,21 @@ import Home from '../Pages/Home.vue';
 import ProductDetailView from '../Pages/ProductDetailView.vue';
 
 const routes = [
-  { path: '/', component: Home },
-  { path: '/product/:id', name: 'ProductDetailView', component: ProductDetailView, props: true }
+  {
+    path: '/',
+    name: 'Home',
+    component: Home,
+  },
+  {
+    path: '/product/:id',
+    name: 'ProductDetailView',
+    component: ProductDetailView,
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 });
 
 export default router;
