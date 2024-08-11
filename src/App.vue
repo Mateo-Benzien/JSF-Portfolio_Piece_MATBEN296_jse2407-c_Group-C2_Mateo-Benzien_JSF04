@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-
+    <button v-if="isAuthenticated" @click="handleLogout">Logout</button>
     <!-- Router View -->
     <router-view/>
   </div>
@@ -10,16 +10,39 @@
 export default {
   data() {
     return {
-      cartCount: 0
+      isAuthenticated: !!localStorage.getItem('token'), // Check if token exists
     };
   },
   methods: {
-    // You can add methods here that are applicable across the app
-  }
-}
+    handleLogout() {
+      // Clear the token from localStorage
+      localStorage.removeItem('token');
+      this.isAuthenticated = false;
+      // Redirect to the login page
+      this.$router.push({ name: 'Login' });
+    },
+  },
+  watch: {
+    $route(to, from) {
+      // Check for protected routes and redirect if not authenticated
+      if (to.matched.some(record => record.meta.requiresAuth) && !this.isAuthenticated) {
+        this.$router.push({ name: 'Login', query: { redirect: to.fullPath } });
+      }
+    },
+  },
+};
 </script>
 
 <style>
 /* Global styles can be placed here */
-@import './styles.css';
+
+body {
+  font-family: Arial, sans-serif;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* Add more global styles as needed */
 </style>
