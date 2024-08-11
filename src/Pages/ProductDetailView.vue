@@ -7,11 +7,8 @@
       <p class="product-detail-price">${{ product.price }}</p>
       <p class="product-detail-category">Category: {{ product.category }}</p>
       <div class="rating">
-        <span class="star" :class="{ 'filled': product.rating >= 1 }">&#9733;</span>
-        <span class="star" :class="{ 'filled': product.rating >= 2 }">&#9733;</span>
-        <span class="star" :class="{ 'filled': product.rating >= 3 }">&#9733;</span>
-        <span class="star" :class="{ 'filled': product.rating >= 4 }">&#9733;</span>
-        <span class="star" :class="{ 'filled': product.rating >= 5 }">&#9733;</span>
+        <span class="star" v-for="star in 5" :key="star" :class="{ 'filled': product.rating.rate >= star }">&#9733;</span>
+        <p class="rating-info">{{ product.rating.rate }} / 5 ({{ product.rating.count }} reviews)</p>
       </div>
       <div class="button-container">
         <button class="add-to-cart" @click="toggleCart">
@@ -110,6 +107,10 @@ export default {
   color: white;
 }
 
+.rating {
+  margin-top: 10px;
+}
+
 .rating .star {
   color: #ffdd00;
   font-size: 1.2em;
@@ -117,6 +118,11 @@ export default {
 
 .rating .star.filled {
   color: #ffdd00;
+}
+
+.rating-info {
+  margin-top: 5px;
+  font-size: 1em;
 }
 
 .product-detail {
