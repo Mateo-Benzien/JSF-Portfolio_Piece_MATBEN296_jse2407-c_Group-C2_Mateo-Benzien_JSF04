@@ -14,26 +14,28 @@
               <span class="wishlist-text">Wishlist</span>
             </a>
           </h3>
-          <div class="cart">
-            <a href="#">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="cart-icon"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                />
-              </svg>
-            </a>
-            <span class="cart-badge">{{ cartCount }}</span>
+          <div class="cart-container">
+            <div class="cart">
+              <a href="#">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="cart-icon"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                  />
+                </svg>
+              </a>
+              <span class="cart-badge">{{ cartCount }}</span>
+            </div>
+            <div class="login"><a href="#">Login</a></div>
           </div>
-          <div class="login"><a href="#">Login</a></div>
         </div>
       </div>
     </header>
@@ -79,12 +81,14 @@
           </div>
           <p class="product-price">${{ product.price }}</p>
           <p class="product-category">{{ product.category }}</p>
-          <button class="add-to-cart" @click.stop="toggleCart(product)">
-            {{ isInCart(product.id) ? 'Remove from Cart' : 'Add to Cart' }}
-          </button>
-          <button class="favorites-btn">
-            <span class="favorites-icon"></span>
-          </button>
+          <div class="button-group">
+            <button class="add-to-cart" @click.stop="toggleCart(product)">
+              {{ isInCart(product.id) ? 'Remove from Cart' : 'Add to Cart' }}
+            </button>
+            <button class="favorites-btn">
+              <span class="favorites-icon">❤️</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -200,18 +204,31 @@ export default {
   align-items: center;
 }
 
+.cart-container {
+  display: flex;
+  align-items: center;
+}
+
+.cart {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
 .cart-icon {
   width: 24px;
   height: 24px;
-  margin-right: 10px;
+  margin-right: 5px;
 }
 
 .cart-badge {
   background: #007bff;
   color: #fff;
   border-radius: 50%;
-  padding: 0 10px;
+  padding: 0 8px;
   margin-left: 5px;
+  font-size: 14px;
+  line-height: 24px;
 }
 
 .login a {
@@ -229,59 +246,99 @@ export default {
   padding: 20px;
 }
 
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+}
+
 .product-card {
   border: 1px solid #ddd;
   border-radius: 5px;
-  padding: 15px;
-  margin-bottom: 20px;
+  padding: 15px; /* Increased padding for more space */
   text-align: center;
+  background-color: #fff;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 500px; /* Increased height for taller cards */
 }
 
 .product-image {
   width: 100%;
   height: auto;
+  max-height: 300px;
+  object-fit: cover;
+  margin-bottom: 10px;
 }
 
-.rating {
+.product-title {
+  font-size: 14px; /* Adjust font size for titles */
   margin: 10px 0;
 }
 
+.rating {
+  margin: 5px 0;
+}
+
 .star {
-  color: #ffd700;
-  font-size: 20px;
+  font-size: 16px;
+  color: #ddd;
 }
 
 .star.filled {
-  color: #ffd700;
+  color: #ffcc00;
 }
 
 .product-price {
-  font-size: 18px;
+  font-size: 16px; /* Adjust font size for price */
   color: #333;
+  margin-bottom: 5px;
 }
 
 .product-category {
-  font-size: 14px;
-  color: #777;
+  font-size: 12px; /* Adjust font size for category */
+  color: #666;
+  margin-bottom: 15px;
 }
 
-.add-to-cart, .favorites-btn {
-  background-color: #007bff;
-  color: white;
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.add-to-cart,
+.favorites-btn {
   border: none;
   border-radius: 5px;
-  padding: 10px;
+  color: #fff;
+  background-color: #007bff;
+  padding: 5px;
   cursor: pointer;
+  width: 48%;
+  font-size: 12px; /* Adjust font size for buttons */
 }
 
-.add-to-cart:hover, .favorites-btn:hover {
+.add-to-cart:hover,
+.favorites-btn:hover {
   background-color: #0056b3;
 }
 
+.favorites-icon {
+  color: red;
+}
+
 .footer {
+  background: #f8f9fa;
+  padding: 15px;
   text-align: center;
-  padding: 20px;
-  background-color: #f8f9fa;
   border-top: 1px solid #ddd;
+}
+
+.footer p {
+  margin: 0;
+  color: #333;
 }
 </style>
