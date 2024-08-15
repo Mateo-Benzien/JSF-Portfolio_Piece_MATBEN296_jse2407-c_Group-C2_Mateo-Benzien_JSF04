@@ -34,68 +34,38 @@
               </a>
               <span class="cart-badge">{{ cartCount }}</span>
             </div>
-            <div class="comparison">
-              <a href="/comparison" class="comparison-btn">Compare</a>
-            </div>
             <div class="login"><a href="#">Login</a></div>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- Filter and Sort Wrapper -->
-    <div class="filter-sort-container">
-      <!-- Filter Section -->
-      <div class="filter">
-        <select class="filter-select" v-model="selectedCategory" @change="filterProducts">
-          <option value="">Select Category</option>
-          <option value="all">All Categories</option>
-          <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
-        </select>
-      </div>
-      <!-- Sort Section -->
-      <div class="sort">
-        <label for="sort-select" class="sort-label">Sort by:</label>
-        <select id="sort-select" class="sort-select" v-model="selectedSort" @change="sortProducts">
-          <option value="">Default</option>
-          <option value="asc">Low to High</option>
-          <option value="desc">High to Low</option>
-        </select>
-      </div>
+    <!-- Comparison List Section -->
+    <div v-if="comparisonList.length" class="comparison-section">
+      <h2>Comparison List</h2>
+      <table>
+        <thead>
+          <tr>
+            <th v-for="header in headers" :key="header">{{ header }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in comparisonList" :key="index">
+            <td><img :src="item.image" :alt="item.title" class="comparison-image" /></td>
+            <td>{{ item.title }}</td>
+            <td>{{ item.description }}</td>
+            <td>${{ item.price }}</td>
+            <td>{{ item.rating }} ★</td>
+            <td><button @click="removeFromComparison(item.id)">Remove</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button @click="clearComparisonList">Clear List</button>
     </div>
-
-    <!-- Product List Section -->
-    <div class="product-list-container">
-      <div class="product-list">
-        <div
-          class="product-card"
-          v-for="product in products"
-          :key="product.id"
-          @click="goToProduct(product.id)"
-        >
-          <img :src="product.image" :alt="product.title" class="product-image" />
-          <h2 class="product-title">{{ product.title }}</h2>
-          <div class="rating">
-            <span class="star" :class="{ 'filled': product.rating >= 1 }">&#9733;</span>
-            <span class="star" :class="{ 'filled': product.rating >= 2 }">&#9733;</span>
-            <span class="star" :class="{ 'filled': product.rating >= 3 }">&#9733;</span>
-            <span class="star" :class="{ 'filled': product.rating >= 4 }">&#9733;</span>
-            <span class="star" :class="{ 'filled': product.rating >= 5 }">&#9733;</span>
-          </div>
-          <p class="product-price">${{ product.price }}</p>
-          <p class="product-category">{{ product.category }}</p>
-          <div class="button-group">
-            <button class="add-to-cart" @click.stop="toggleCart(product)">
-              {{ isInCart(product.id) ? 'Remove from Cart' : 'Add to Cart' }}
-            </button>
-            <button class="favorites-btn">
-              <span class="favorites-icon">❤️</span>
-            </button>
-          </div>
-        </div>
-      </div>
+    <div v-else>
+      <p>No items in comparison list.</p>
     </div>
-
+    
     <!-- Footer Section -->
     <footer class="footer">
       <p>© 2024 SwiftCart. All rights reserved.</p>
@@ -111,8 +81,10 @@ export default {
       categories: [],
       selectedCategory: '',
       selectedSort: '',
+      comparisonList: JSON.parse(localStorage.getItem('comparisonList')) || [],
       cart: JSON.parse(localStorage.getItem('cart')) || [],
       cartCount: JSON.parse(localStorage.getItem('cartCount')) || 0,
+      headers: ['Image', 'Title', 'Description', 'Price', 'Rating', 'Actions'],
     };
   },
   mounted() {
@@ -164,207 +136,209 @@ export default {
         this.cart.push({ ...product, quantity: 1 });
       }
       this.updateCart();
-      this.syncCartWithServer(); // Add this line
+      this.syncCartWithServer();
     },
     removeFromCart(productId) {
       this.cart = this.cart.filter(product => product.id !== productId);
       this.updateCart();
-      this.syncCartWithServer(); // Add this line
+      this.syncCartWithServer();
     },
     updateCart() {
-      this.cartCount = this.cart.reduce((acc, product) => acc + product.quantity, 0);
+      this.cartCount = this.cart.reduce((total, product) => total + product.quantity, 0);
       localStorage.setItem('cart', JSON.stringify(this.cart));
-      localStorage.setItem('cartCount', JSON.stringify(this.cartCount));
-    },
-    syncCartWithServer() {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      fetch('/api/cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(this.cart),
-      }).catch(error => console.error('Failed to sync cart:', error));
-    },
-    updateCartCount() {
-      this.cartCount = this.cart.reduce((acc, product) => acc + product.quantity, 0);
+      localStorage.setItem('cartCount', this.cartCount);
     },
     isInCart(productId) {
       return this.cart.some(product => product.id === productId);
     },
-    goToProduct(id) {
-      this.$router.push({ name: 'ProductDetailView', params: { id } });
+    updateCartCount() {
+      this.cartCount = JSON.parse(localStorage.getItem('cartCount')) || 0;
+    },
+    addToComparison(product) {
+      if (this.comparisonList.length >= 5) {
+        alert('You can only compare up to 5 items.');
+        return;
+      }
+      if (!this.comparisonList.some(item => item.id === product.id)) {
+        this.comparisonList.push(product);
+        localStorage.setItem('comparisonList', JSON.stringify(this.comparisonList));
+      }
+    },
+    removeFromComparison(productId) {
+      this.comparisonList = this.comparisonList.filter(item => item.id !== productId);
+      localStorage.setItem('comparisonList', JSON.stringify(this.comparisonList));
+    },
+    clearComparisonList() {
+      this.comparisonList = [];
+      localStorage.setItem('comparisonList', JSON.stringify(this.comparisonList));
+    },
+    goToProduct(productId) {
+      this.$router.push({ name: 'ProductPage', params: { id: productId } });
+    },
+    async syncCartWithServer() {
+      const userToken = localStorage.getItem('userToken');
+      if (userToken) {
+        try {
+          await fetch('https://fakestoreapi.com/user/cart', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${userToken}`,
+            },
+            body: JSON.stringify(this.cart),
+          });
+        } catch (error) {
+          console.error('Error syncing cart with server:', error);
+        }
+      }
     },
   },
 };
 </script>
 
 <style scoped>
+/* Styles for your ComparisonPage.vue component */
 .header {
-  background: #f8f9fa;
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
-
-.header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background-color: #f8f9fa;
+  padding: 10px;
 }
-
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
 .brand {
   display: flex;
   align-items: center;
 }
-
 .brand-logo {
   width: 50px;
   height: auto;
-  margin-right: 10px;
 }
-
 .header-title {
+  margin-left: 10px;
   font-size: 24px;
-  color: #333;
 }
-
 .header-right {
   display: flex;
   align-items: center;
 }
-
+.wishlist {
+  margin-right: 20px;
+}
+.wishlist-btn {
+  display: flex;
+  align-items: center;
+}
+.wishlist-icon {
+  font-size: 20px;
+}
+.wishlist-text {
+  margin-left: 5px;
+}
 .cart-container {
   display: flex;
   align-items: center;
 }
-
 .cart {
-  display: flex;
-  align-items: center;
-  margin-right: 15px;
+  position: relative;
 }
-
 .cart-icon {
   width: 24px;
   height: 24px;
-  margin-right: 5px;
 }
-
 .cart-badge {
-  background: #007bff;
-  color: #fff;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: red;
+  color: white;
   border-radius: 50%;
-  padding: 0 8px;
-  margin-left: 5px;
-  font-size: 14px;
+  padding: 2px 6px;
+  font-size: 12px;
 }
-
-.comparison {
-  margin-right: 15px;
+.login a {
+  margin-left: 20px;
 }
-
-.comparison-btn {
-  background: #007bff;
-  color: #fff;
-  padding: 8px 16px;
-  border-radius: 5px;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.comparison-btn:hover {
-  background: #0056b3;
-}
-
-.filter-sort-container {
-  display: flex;
-  justify-content: space-between;
-  margin: 20px 0;
-}
-
-.filter, .sort {
-  flex: 1;
-}
-
-.filter-select, .sort-select {
-  width: 100%;
-}
-
 .product-list-container {
-  display: flex;
-  flex-wrap: wrap;
+  padding: 20px;
 }
-
 .product-list {
   display: flex;
   flex-wrap: wrap;
 }
-
 .product-card {
-  width: 200px;
-  margin: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
-  overflow: hidden;
+  margin: 10px;
+  padding: 10px;
+  width: 200px;
   cursor: pointer;
-  text-align: center;
+  transition: background-color 0.3s;
 }
-
+.product-card:hover {
+  background-color: #f0f0f0;
+}
 .product-image {
   width: 100%;
-  height: 150px;
-  object-fit: cover;
+  height: auto;
 }
-
 .product-title {
   font-size: 18px;
   margin: 10px 0;
 }
-
-.rating .star {
-  color: #ccc;
+.rating {
+  display: flex;
 }
-
-.rating .star.filled {
+.star {
+  font-size: 16px;
   color: #ffd700;
 }
-
+.filled {
+  color: #ffd700;
+}
 .product-price {
   font-size: 16px;
-  margin: 5px 0;
+  color: #333;
 }
-
 .product-category {
   font-size: 14px;
   color: #666;
 }
-
 .button-group {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
 }
-
-.add-to-cart, .favorites-btn {
-  background: #007bff;
-  color: #fff;
+.add-to-cart,
+.compare-btn {
+  padding: 5px 10px;
   border: none;
-  padding: 10px;
-  margin: 5px;
-  border-radius: 5px;
+  border-radius: 3px;
   cursor: pointer;
 }
-
-.add-to-cart:hover, .favorites-btn:hover {
-  background: #0056b3;
+.add-to-cart {
+  background-color: #007bff;
+  color: white;
 }
-
+.compare-btn {
+  background-color: #28a745;
+  color: white;
+}
+.comparison-section {
+  padding: 20px;
+}
+.comparison-image {
+  width: 50px;
+  height: auto;
+}
 .footer {
-  background: #f8f9fa;
+  background-color: #f8f9fa;
   padding: 10px;
   text-align: center;
-  border-top: 1px solid #ddd;
+  margin-top: 20px;
 }
 </style>

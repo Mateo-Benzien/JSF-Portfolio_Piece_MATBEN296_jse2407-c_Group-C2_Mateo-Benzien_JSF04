@@ -33,6 +33,9 @@
               </a>
               <span class="cart-badge">{{ cartCount }}</span>
             </div>
+            <div class="comparison">
+              <a href="/comparison" class="comparison-btn">Compare</a>
+            </div>
             <div class="login"><a href="#">Login</a></div>
           </div>
         </div>
@@ -55,6 +58,9 @@
           </div>
           <button @click="toggleCart">{{ isInCart ? 'Remove from Cart' : 'Add to Cart' }}</button>
           <button @click="toggleFavorites">{{ isFavorite ? 'Unfavorite' : 'Add to Favorites' }}</button>
+          <button class="compare-btn" @click.stop="addToComparison(product)">
+                Compare
+          </button>
           <button @click="goBackToHome">Back to Home</button>
         </div>
       </div>
@@ -75,6 +81,7 @@ export default {
       isInCart: false,
       cart: JSON.parse(localStorage.getItem('cart')) || [],
       cartCount: JSON.parse(localStorage.getItem('cartCount')) || 0,
+      comparisonList: JSON.parse(localStorage.getItem('comparisonList')) || [],
     };
   },
   mounted() {
@@ -136,6 +143,16 @@ export default {
     },
     goBackToHome() {
       this.$router.push({ name: 'Home' });
+    },
+    addToComparison(product) {
+      if (this.comparisonList.length >= 5) {
+        alert('You can only compare up to 5 items.');
+        return;
+      }
+      if (!this.comparisonList.some(item => item.id === product.id)) {
+        this.comparisonList.push(product);
+        localStorage.setItem('comparisonList', JSON.stringify(this.comparisonList));
+      }
     },
   },
 };
@@ -260,5 +277,9 @@ button {
   border-radius: 5px;
   cursor: pointer;
   margin-right: 10px;
+}
+
+.compare-btn {
+  background-color: #28a745;
 }
 </style>
