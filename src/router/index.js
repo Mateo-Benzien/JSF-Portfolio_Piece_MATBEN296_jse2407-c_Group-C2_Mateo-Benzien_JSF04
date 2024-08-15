@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../Pages/Home.vue';
 import ProductDetailView from '../Pages/ProductDetailView.vue';
 import Login from '../Pages/Login.vue';
+import Cart from '../Pages/Cart.vue'; // Import Cart component
 
 const routes = [
   {
@@ -14,6 +15,12 @@ const routes = [
     path: '/product/:id',
     name: 'ProductDetailView',
     component: ProductDetailView,
+    meta: { requiresAuth: true }, // Protected route
+  },
+  {
+    path: '/cart',
+    name: 'Cart',
+    component: Cart,
     meta: { requiresAuth: true }, // Protected route
   },
   {

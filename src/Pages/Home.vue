@@ -4,7 +4,7 @@
     <header class="header">
       <div class="header-content">
         <div class="brand">
-          <img src="" alt="Brand Logo" class="brand-logo" />
+          <img src="/shop.png" alt="Brand Logo" class="brand-logo" />
           <h1 class="header-title">SwiftCart</h1>
         </div>
         <div class="header-right">
@@ -16,7 +16,7 @@
           </h3>
           <div class="cart-container">
             <div class="cart">
-              <a href="#">
+              <a href="/cart">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -108,13 +108,14 @@ export default {
       categories: [],
       selectedCategory: '',
       selectedSort: '',
-      cart: [],
-      cartCount: 0,
+      cart: JSON.parse(localStorage.getItem('cart')) || [],
+      cartCount: JSON.parse(localStorage.getItem('cartCount')) || 0,
     };
   },
   mounted() {
     this.fetchCategories();
     this.fetchProducts('all');
+    this.updateCartCount();
   },
   methods: {
     async fetchProducts(category) {
@@ -153,12 +154,40 @@ export default {
       }
     },
     addToCart(product) {
-      this.cart.push(product);
-      this.cartCount++;
+      const existingProduct = this.cart.find(p => p.id === product.id);
+      if (existingProduct) {
+        existingProduct.quantity++;
+      } else {
+        this.cart.push({ ...product, quantity: 1 });
+      }
+      this.updateCart();
+      this.syncCartWithServer(); // Add this line
     },
     removeFromCart(productId) {
       this.cart = this.cart.filter(product => product.id !== productId);
-      this.cartCount--;
+      this.updateCart();
+      this.syncCartWithServer(); // Add this line
+    },
+    updateCart() {
+      this.cartCount = this.cart.reduce((acc, product) => acc + product.quantity, 0);
+      localStorage.setItem('cart', JSON.stringify(this.cart));
+      localStorage.setItem('cartCount', JSON.stringify(this.cartCount));
+    },
+    syncCartWithServer() {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      fetch('/api/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(this.cart),
+      }).catch(error => console.error('Failed to sync cart:', error));
+    },
+    updateCartCount() {
+      this.cartCount = this.cart.reduce((acc, product) => acc + product.quantity, 0);
     },
     isInCart(productId) {
       return this.cart.some(product => product.id === productId);
@@ -228,117 +257,94 @@ export default {
   padding: 0 8px;
   margin-left: 5px;
   font-size: 14px;
-  line-height: 24px;
-}
-
-.login a {
-  color: #007bff;
-  text-decoration: none;
 }
 
 .filter-sort-container {
   display: flex;
   justify-content: space-between;
-  padding: 10px;
+  margin: 20px 0;
+}
+
+.filter, .sort {
+  flex: 1;
+}
+
+.filter-select, .sort-select {
+  width: 100%;
 }
 
 .product-list-container {
-  padding: 20px;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .product-list {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 15px;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .product-card {
+  width: 200px;
+  margin: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
-  padding: 15px; /* Increased padding for more space */
+  overflow: hidden;
+  cursor: pointer;
   text-align: center;
-  background-color: #fff;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 500px; /* Increased height for taller cards */
 }
 
 .product-image {
   width: 100%;
-  height: auto;
-  max-height: 300px;
+  height: 150px;
   object-fit: cover;
-  margin-bottom: 10px;
 }
 
 .product-title {
-  font-size: 14px; /* Adjust font size for titles */
+  font-size: 18px;
   margin: 10px 0;
 }
 
-.rating {
-  margin: 5px 0;
+.rating .star {
+  color: #ccc;
 }
 
-.star {
-  font-size: 16px;
-  color: #ddd;
-}
-
-.star.filled {
-  color: #ffcc00;
+.rating .star.filled {
+  color: #ffd700;
 }
 
 .product-price {
-  font-size: 16px; /* Adjust font size for price */
-  color: #333;
-  margin-bottom: 5px;
+  font-size: 16px;
+  margin: 5px 0;
 }
 
 .product-category {
-  font-size: 12px; /* Adjust font size for category */
+  font-size: 14px;
   color: #666;
-  margin-bottom: 15px;
 }
 
 .button-group {
   display: flex;
-  justify-content: space-between;
-  margin-top: auto;
+  justify-content: center;
 }
 
-.add-to-cart,
-.favorites-btn {
-  border: none;
-  border-radius: 5px;
+.add-to-cart, .favorites-btn {
+  background: #007bff;
   color: #fff;
-  background-color: #007bff;
-  padding: 5px;
+  border: none;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 5px;
   cursor: pointer;
-  width: 48%;
-  font-size: 12px; /* Adjust font size for buttons */
 }
 
-.add-to-cart:hover,
-.favorites-btn:hover {
-  background-color: #0056b3;
-}
-
-.favorites-icon {
-  color: red;
+.add-to-cart:hover, .favorites-btn:hover {
+  background: #0056b3;
 }
 
 .footer {
   background: #f8f9fa;
-  padding: 15px;
+  padding: 10px;
   text-align: center;
   border-top: 1px solid #ddd;
-}
-
-.footer p {
-  margin: 0;
-  color: #333;
 }
 </style>
