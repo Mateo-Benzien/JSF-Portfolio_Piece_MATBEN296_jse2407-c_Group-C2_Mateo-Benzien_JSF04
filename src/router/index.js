@@ -2,8 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../Pages/Home.vue';
 import ProductDetailView from '../Pages/ProductDetailView.vue';
 import Login from '../Pages/Login.vue';
-import Cart from '../Pages/Cart.vue'; // Import Cart component
-import ComparisonPage from '../Pages/ComparisonPage.vue'; // Import ComparisonPage component
+import Cart from '../Pages/Cart.vue';
+import ComparisonPage from '../Pages/ComparisonPage.vue';
+import Wishlist from '../Pages/Wishlist.vue'; // Import Wishlist component
 
 const routes = [
   {
@@ -33,6 +34,12 @@ const routes = [
     path: '/comparison',
     name: 'ComparisonPage',
     component: ComparisonPage,
+    meta: { requiresAuth: true }, // Protected route
+  },
+  {
+    path: '/wishlist',
+    name: 'Wishlist',
+    component: Wishlist,
     meta: { requiresAuth: true }, // Protected route
   },
 ];

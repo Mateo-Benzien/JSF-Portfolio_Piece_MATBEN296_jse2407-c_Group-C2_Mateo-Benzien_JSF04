@@ -9,8 +9,9 @@
         </div>
         <div class="header-right">
           <h3 class="wishlist">
-            <a href="#" class="wishlist-btn">
+            <a href="/wishlist" class="wishlist-btn">
               <span class="wishlist-icon">🤍</span>
+              <span class="wishlist-count">{{ wishlistCount }}</span>
               <span class="wishlist-text">Wishlist</span>
             </a>
           </h3>
@@ -88,8 +89,8 @@
             <button class="add-to-cart" @click.stop="toggleCart(product)">
               {{ isInCart(product.id) ? 'Remove from Cart' : 'Add to Cart' }}
             </button>
-            <button class="favorites-btn">
-              <span class="favorites-icon">❤️</span>
+            <button class="favorites-btn" @click.stop="toggleWishlist(product)">
+              <span class="favorites-icon">{{ isInWishlist(product.id) ? '💖' : '🤍' }}</span>
             </button>
           </div>
         </div>
@@ -112,13 +113,16 @@ export default {
       selectedCategory: '',
       selectedSort: '',
       cart: JSON.parse(localStorage.getItem('cart')) || [],
+      wishlist: JSON.parse(localStorage.getItem('wishlist')) || [],
       cartCount: JSON.parse(localStorage.getItem('cartCount')) || 0,
+      wishlistCount: JSON.parse(localStorage.getItem('wishlistCount')) || 0,
     };
   },
   mounted() {
     this.fetchCategories();
     this.fetchProducts('all');
     this.updateCartCount();
+    this.updateWishlistCount();
   },
   methods: {
     async fetchProducts(category) {
@@ -164,12 +168,12 @@ export default {
         this.cart.push({ ...product, quantity: 1 });
       }
       this.updateCart();
-      this.syncCartWithServer(); // Add this line
+      this.syncCartWithServer();
     },
     removeFromCart(productId) {
       this.cart = this.cart.filter(product => product.id !== productId);
       this.updateCart();
-      this.syncCartWithServer(); // Add this line
+      this.syncCartWithServer();
     },
     updateCart() {
       this.cartCount = this.cart.reduce((acc, product) => acc + product.quantity, 0);
@@ -195,40 +199,71 @@ export default {
     isInCart(productId) {
       return this.cart.some(product => product.id === productId);
     },
-    goToProduct(id) {
-      this.$router.push({ name: 'ProductDetailView', params: { id } });
+    toggleWishlist(product) {
+      if (this.isInWishlist(product.id)) {
+        this.removeFromWishlist(product.id);
+      } else {
+        this.addToWishlist(product);
+      }
+    },
+    addToWishlist(product) {
+      this.wishlist.push(product);
+      this.updateWishlist();
+      this.syncWishlistWithServer();
+    },
+    removeFromWishlist(productId) {
+      this.wishlist = this.wishlist.filter(product => product.id !== productId);
+      this.updateWishlist();
+      this.syncWishlistWithServer();
+    },
+    updateWishlist() {
+      this.wishlistCount = this.wishlist.length;
+      localStorage.setItem('wishlist', JSON.stringify(this.wishlist));
+      localStorage.setItem('wishlistCount', JSON.stringify(this.wishlistCount));
+    },
+    syncWishlistWithServer() {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      fetch('/api/wishlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(this.wishlist),
+      }).catch(error => console.error('Failed to sync wishlist:', error));
+    },
+    updateWishlistCount() {
+      this.wishlistCount = this.wishlist.length;
+    },
+    isInWishlist(productId) {
+      return this.wishlist.some(product => product.id === productId);
+    },
+    goToProduct(productId) {
+      this.$router.push({ path: `/product/${productId}` });
     },
   },
 };
 </script>
 
 <style scoped>
-.header {
-  background: #f8f9fa;
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
-
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f8f8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .brand-logo {
-  width: 50px;
-  height: auto;
-  margin-right: 10px;
+  height: 40px;
+  width: auto;
 }
 
 .header-title {
-  font-size: 24px;
-  color: #333;
+  margin-left: 10px;
 }
 
 .header-right {
@@ -241,130 +276,137 @@ export default {
   align-items: center;
 }
 
-.cart {
-  display: flex;
-  align-items: center;
-  margin-right: 15px;
-}
-
 .cart-icon {
-  width: 24px;
   height: 24px;
-  margin-right: 5px;
+  width: 24px;
 }
 
 .cart-badge {
-  background: #007bff;
-  color: #fff;
+  background-color: #ff0000;
+  color: #ffffff;
+  padding: 2px 8px;
   border-radius: 50%;
-  padding: 0 8px;
-  margin-left: 5px;
-  font-size: 14px;
-}
-
-.comparison {
-  margin-right: 15px;
-}
-
-.comparison-btn {
-  background: #007bff;
-  color: #fff;
-  padding: 8px 16px;
-  border-radius: 5px;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.comparison-btn:hover {
-  background: #0056b3;
-}
-
-.filter-sort-container {
-  display: flex;
-  justify-content: space-between;
-  margin: 20px 0;
-}
-
-.filter, .sort {
-  flex: 1;
-}
-
-.filter-select, .sort-select {
-  width: 100%;
+  font-size: 12px;
+  margin-left: -10px;
+  margin-top: -10px;
 }
 
 .product-list-container {
-  display: flex;
-  flex-wrap: wrap;
+  padding: 20px;
 }
 
 .product-list {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
 }
 
 .product-card {
-  width: 200px;
-  margin: 10px;
+  padding: 20px; /* Increased padding for a bit more height */
   border: 1px solid #ddd;
   border-radius: 5px;
-  overflow: hidden;
-  cursor: pointer;
   text-align: center;
+  transition: box-shadow 0.2s;
+  background-color: #fff;
+}
+
+.product-card:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .product-image {
   width: 100%;
-  height: 150px;
+  height: 300px; /* Increased height for a taller image */
   object-fit: cover;
 }
 
 .product-title {
-  font-size: 18px;
+  font-size: 16px;
   margin: 10px 0;
 }
 
-.rating .star {
-  color: #ccc;
+.rating {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
 }
 
-.rating .star.filled {
-  color: #ffd700;
+.star {
+  font-size: 14px;
+  margin: 0 2px;
+}
+
+.star.filled {
+  color: #f39c12;
 }
 
 .product-price {
-  font-size: 16px;
-  margin: 5px 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #2c3e50;
 }
 
 .product-category {
   font-size: 14px;
-  color: #666;
+  color: #7f8c8d;
+  margin-bottom: 10px;
 }
 
 .button-group {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
 }
 
-.add-to-cart, .favorites-btn {
-  background: #007bff;
-  color: #fff;
+.add-to-cart,
+.favorites-btn {
+  padding: 5px 10px;
   border: none;
-  padding: 10px;
-  margin: 5px;
-  border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-.add-to-cart:hover, .favorites-btn:hover {
-  background: #0056b3;
+.add-to-cart {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.add-to-cart:hover {
+  background-color: #0463c9;
+}
+
+.favorites-btn {
+  background-color: #fff;
+  border: 1px solid #ddd;
+}
+
+.favorites-btn:hover {
+  background-color: #f8f8f8;
 }
 
 .footer {
-  background: #f8f9fa;
-  padding: 10px;
   text-align: center;
+  padding: 10px 20px;
+  background-color: #f8f8f8;
+  color: #7f8c8d;
   border-top: 1px solid #ddd;
+}
+
+.wishlist-container {
+  display: flex;
+  align-items: center;
+}
+
+.wishlist-btn {
+  text-decoration: none;
+  color: inherit;
+}
+
+.wishlist-icon {
+  font-size: 20px;
+  margin-right: 5px;
+}
+
+.wishlist-count {
+  font-weight: bold;
 }
 </style>
