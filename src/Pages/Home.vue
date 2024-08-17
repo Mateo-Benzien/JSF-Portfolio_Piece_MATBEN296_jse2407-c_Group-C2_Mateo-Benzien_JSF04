@@ -39,6 +39,9 @@
               <a href="/comparison" class="comparison-btn">Compare</a>
             </div>
             <div class="login"><a href="#">Login</a></div>
+            <div class="logout">
+              <button @click="logout">Logout</button>
+            </div>
           </div>
         </div>
       </div>
@@ -243,27 +246,40 @@ export default {
     goToProduct(productId) {
       this.$router.push({ path: `/product/${productId}` });
     },
+    logout() {
+      localStorage.removeItem('token');
+      this.$router.push('/login');
+    },
   },
 };
 </script>
 
 <style scoped>
+.header {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-bottom: 1px solid #dee2e6;
+}
+
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  background-color: #f8f8f8;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
 }
 
 .brand-logo {
-  height: 40px;
-  width: auto;
+  width: 50px;
+  height: 50px;
 }
 
 .header-title {
   margin-left: 10px;
+  font-size: 1.5em;
 }
 
 .header-right {
@@ -289,6 +305,40 @@ export default {
   font-size: 12px;
   margin-left: -10px;
   margin-top: -10px;
+}
+
+.wishlist-container {
+  display: flex;
+  align-items: center;
+}
+
+.wishlist-btn {
+  text-decoration: none;
+  color: inherit;
+}
+
+.wishlist-icon {
+  font-size: 20px;
+  margin-right: 5px;
+}
+
+.wishlist-count {
+  font-weight: bold;
+}
+
+.logout button {
+  margin-left: 20px;
+  background: none;
+  border: 1px solid #007bff;
+  color: #007bff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.logout button:hover {
+  background-color: #007bff;
+  color: white;
 }
 
 .product-list-container {
@@ -389,24 +439,5 @@ export default {
   background-color: #f8f8f8;
   color: #7f8c8d;
   border-top: 1px solid #ddd;
-}
-
-.wishlist-container {
-  display: flex;
-  align-items: center;
-}
-
-.wishlist-btn {
-  text-decoration: none;
-  color: inherit;
-}
-
-.wishlist-icon {
-  font-size: 20px;
-  margin-right: 5px;
-}
-
-.wishlist-count {
-  font-weight: bold;
 }
 </style>

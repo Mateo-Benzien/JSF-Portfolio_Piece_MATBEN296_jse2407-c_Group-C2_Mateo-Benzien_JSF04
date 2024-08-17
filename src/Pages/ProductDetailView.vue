@@ -56,6 +56,7 @@
             <span class="star" :class="{ 'filled': product.rating >= 4 }">&#9733;</span>
             <span class="star" :class="{ 'filled': product.rating >= 5 }">&#9733;</span>
           </div>
+          <p class="review-count">{{ product.reviewCount }} reviews</p>
           <button @click="toggleCart">{{ isInCart ? 'Remove from Cart' : 'Add to Cart' }}</button>
           <button @click="toggleFavorites">{{ isFavorite ? 'Unfavorite' : 'Add to Favorites' }}</button>
           <button class="compare-btn" @click.stop="addToComparison(product)">
@@ -96,7 +97,9 @@ export default {
       this.checkCartStatus();
     },
     checkCartStatus() {
-      this.isInCart = this.cart.some(item => item.id === this.product.id);
+      if (this.product) {
+        this.isInCart = this.cart.some(item => item.id === this.product.id);
+      }
     },
     toggleCart() {
       if (this.isInCart) {
@@ -267,6 +270,12 @@ export default {
 
 .star.filled {
   color: #ffd700;
+}
+
+.review-count {
+  font-size: 16px;
+  color: #666;
+  margin-top: 10px;
 }
 
 button {

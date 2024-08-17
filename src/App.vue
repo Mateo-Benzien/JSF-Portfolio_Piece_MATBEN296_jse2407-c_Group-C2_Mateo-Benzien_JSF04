@@ -8,23 +8,19 @@
 
 <script>
 export default {
-  data() {
-    return {
-      isAuthenticated: !!localStorage.getItem('token'), // Check if token exists
-    };
+  computed: {
+    isAuthenticated() {
+      return !!localStorage.getItem('token');
+    }
   },
   methods: {
     handleLogout() {
-      // Clear the token from localStorage
       localStorage.removeItem('token');
-      this.isAuthenticated = false;
-      // Redirect to the login page
       this.$router.push({ name: 'Login' });
     },
   },
   watch: {
-    $route(to, from) {
-      // Check for protected routes and redirect if not authenticated
+    $route(to) {
       if (to.matched.some(record => record.meta.requiresAuth) && !this.isAuthenticated) {
         this.$router.push({ name: 'Login', query: { redirect: to.fullPath } });
       }

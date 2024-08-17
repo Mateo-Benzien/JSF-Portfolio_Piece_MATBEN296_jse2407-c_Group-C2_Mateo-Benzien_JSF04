@@ -4,26 +4,26 @@ import ProductDetailView from '../Pages/ProductDetailView.vue';
 import Login from '../Pages/Login.vue';
 import Cart from '../Pages/Cart.vue';
 import ComparisonPage from '../Pages/ComparisonPage.vue';
-import Wishlist from '../Pages/Wishlist.vue'; // Import Wishlist component
+import Wishlist from '../Pages/Wishlist.vue';
 
 const routes = [
   {
     path: '/',
     name: 'Home',
     component: Home,
-    meta: { requiresAuth: true }, // Protected route
+    meta: { requiresAuth: true },
   },
   {
     path: '/product/:id',
     name: 'ProductDetailView',
     component: ProductDetailView,
-    meta: { requiresAuth: true }, // Protected route
+    meta: { requiresAuth: true },
   },
   {
     path: '/cart',
     name: 'Cart',
     component: Cart,
-    meta: { requiresAuth: true }, // Protected route
+    meta: { requiresAuth: true },
   },
   {
     path: '/login',
@@ -34,13 +34,13 @@ const routes = [
     path: '/comparison',
     name: 'ComparisonPage',
     component: ComparisonPage,
-    meta: { requiresAuth: true }, // Protected route
+    meta: { requiresAuth: true },
   },
   {
     path: '/wishlist',
     name: 'Wishlist',
     component: Wishlist,
-    meta: { requiresAuth: true }, // Protected route
+    meta: { requiresAuth: true },
   },
 ];
 

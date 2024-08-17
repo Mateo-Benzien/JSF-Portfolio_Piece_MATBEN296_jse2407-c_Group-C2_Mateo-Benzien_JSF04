@@ -125,120 +125,38 @@
   border-radius: 50%;
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
-  font-weight: bold;
+  font-weight: 700;
+}
+
+.cart-icon:hover {
+  fill: #ff4081;
 }
 
 /* Header Styles */
-.header {
-  background-color: #f8f9fa;
-  padding: 1rem;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.header-content {
+header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 1rem;
+  background-color: #007bff;
+  color: #fff;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-}
-
-.brand-logo {
-  width: 50px;
-  height: 50px;
-  margin-right: 1rem;
-}
-
-.header-title {
+header .logo {
   font-size: 1.5rem;
   font-weight: 700;
 }
 
-.header-right {
+header nav {
   display: flex;
-  align-items: center;
+  gap: 1rem;
 }
 
-.wishlist {
-  margin-right: 1rem;
-}
-
-.wishlist-btn {
-  display: flex;
-  align-items: center;
-  font-size: 1rem;
-  color: #007bff;
-}
-
-.wishlist-icon {
-  font-size: 1.25rem;
-  margin-right: 0.5rem;
-}
-
-.cart {
-  margin-right: 1rem;
-}
-
-.login a {
-  color: #007bff;
+header nav a {
+  color: #fff;
   text-decoration: none;
 }
 
-.login a:hover {
+header nav a:hover {
   text-decoration: underline;
-}
-
-/* Product list container */
-.product-list-container {
-  padding: 1rem;
-  width: 100%; /* Ensure the container takes full width */
-}
-
-/* Display product cards in a row of 5 */
-.product-list {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr); /* 5 columns in the grid */
-  gap: 1rem;
-  width: 100%; /* Ensure the grid container takes full width */
-}
-
-/* Ensure responsive design for smaller screens */
-@media (max-width: 1200px) {
-  .product-list {
-    grid-template-columns: repeat(4, 1fr); /* 4 columns on medium screens */
-  }
-}
-
-@media (max-width: 900px) {
-  .product-list {
-    grid-template-columns: repeat(3, 1fr); /* 3 columns on small screens */
-  }
-}
-
-@media (max-width: 600px) {
-  .product-list {
-    grid-template-columns: repeat(2, 1fr); /* 2 columns on extra small screens */
-  }
-}
-
-@media (max-width: 400px) {
-  .product-list {
-    grid-template-columns: 1fr; /* 1 column on very small screens */
-  }
-}
-
-/* Skeleton loader */
-.skeleton-loader {
-  background: #f0f0f0;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-}
-
-.skeleton-loader img {
-  background: #e0e0e0;
-  height: 200px;
-  border-radius: 8px;
 }

@@ -3,14 +3,16 @@
     <h1>Login</h1>
     <form @submit.prevent="handleSubmit">
       <input type="text" v-model="username" placeholder="Username" />
-      <input :type="passwordFieldType" v-model="password" placeholder="Password" />
-      <button type="button" @click="togglePasswordVisibility">
-        {{ passwordVisible ? 'Hide' : 'Show' }} Password
-      </button>
-      <button type="submit">Login</button>
+      <div class="password-field">
+        <input :type="passwordFieldType" v-model="password" placeholder="Password" />
+        <button type="button" @click="togglePasswordVisibility">
+          {{ passwordVisible ? 'Hide' : 'Show' }} Password
+        </button>
+      </div>
+      <button type="submit" :disabled="!username || !password">Login</button>
     </form>
-    <div v-if="loading">Logging in...</div>
-    <div v-if="error">{{ error }}</div>
+    <div v-if="loading" class="loading">Logging in...</div>
+    <div v-if="error" class="error">{{ error }}</div>
   </div>
 </template>
 
@@ -62,6 +64,7 @@ export default {
 
         const data = await response.json();
         localStorage.setItem('token', data.token);
+        // Ensure token is set before redirecting
         this.$router.push(this.$route.query.redirect || '/');
       } catch (err) {
         this.error = 'Error: ' + err.message;
@@ -74,14 +77,19 @@ export default {
 </script>
 
 <style scoped>
-/* Add styles specific to this component here */
 .login {
-  /* Your styles */
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 1em;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
 }
 
 .password-field {
   display: flex;
   align-items: center;
+  margin-top: 1em;
 }
 
 .password-field input {
@@ -90,6 +98,9 @@ export default {
 
 .password-field button {
   margin-left: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 button:disabled {
@@ -99,11 +110,11 @@ button:disabled {
 
 .error {
   color: red;
-  margin-top: 10px;
+  margin-top: 1em;
 }
 
 .loading {
   color: blue;
-  margin-top: 10px;
+  margin-top: 1em;
 }
 </style>
