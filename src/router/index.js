@@ -5,6 +5,8 @@ import Login from '../Pages/Login.vue';
 import Cart from '../Pages/Cart.vue';
 import ComparisonPage from '../Pages/ComparisonPage.vue';
 import Wishlist from '../Pages/Wishlist.vue';
+import Checkout from '../Pages/Checkout.vue'; // Use single or double quotes
+import Confirmation from '../Pages/Confirmation.vue'; // Use single or double quotes
 
 const routes = [
   {
@@ -42,6 +44,17 @@ const routes = [
     component: Wishlist,
     meta: { requiresAuth: true },
   },
+  { 
+    path: '/checkout',
+    name: 'Checkout', // Added name for consistency
+    component: Checkout,
+    meta: { requiresAuth: true }
+  }, 
+  { 
+    path: '/confirmation',
+    name: 'Confirmation', // Added name for consistency
+    component: Confirmation 
+  }
 ];
 
 const router = createRouter({

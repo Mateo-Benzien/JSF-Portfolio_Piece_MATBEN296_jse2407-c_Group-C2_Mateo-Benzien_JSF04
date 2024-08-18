@@ -8,7 +8,7 @@
         </div>
         <div class="header-right">
           <h3 class="wishlist">
-            <a href="#" class="wishlist-btn">
+            <a href="/wishlist" class="wishlist-btn">
               <span class="wishlist-icon">🤍</span>
               <span class="wishlist-text">Wishlist</span>
             </a>
@@ -37,27 +37,56 @@
               <a href="/comparison" class="comparison-btn">Compare</a>
             </div>
             <div class="login"><a href="#">Login</a></div>
+            <div class="logout">
+              <button @click="logout">Logout</button>
+            </div>
           </div>
         </div>
       </div>
     </header>
 
     <div class="cart-content">
-      <h1>Your Cart</h1>
-      <div v-if="cartItems.length === 0">
+      <h1>Your Shopping Cart</h1>
+      <div v-if="cartItems.length === 0" class="empty-cart">
         <p>Your cart is empty.</p>
+        <a href="/" class="shop-link">Continue Shopping</a>
       </div>
-      <ul v-else>
-        <li v-for="item in cartItems" :key="item.id" class="cart-item">
-          <img :src="item.image" :alt="item.title" class="cart-item-image" />
-          <div class="cart-item-info">
-            <h2 class="cart-item-title">{{ item.title }}</h2>
-            <p class="cart-item-price">${{ item.price }} x {{ item.quantity }}</p>
-            <button @click="removeFromCart(item.id)">Remove</button>
-          </div>
-        </li>
-      </ul>
-      <button @click="clearCart">Clear Cart</button>
+      <div v-else class="cart-items">
+        <ul>
+          <li v-for="item in cartItems" :key="item.id" class="cart-item">
+            <div class="item-info">
+              <img :src="item.image" alt="Product Image" class="item-image" />
+              <div>
+                <h2>{{ item.title }}</h2>
+                <p>Price: ${{ item.price }}</p>
+                <p>
+                  Quantity:
+                  <input
+                    type="number"
+                    v-model.number="item.quantity"
+                    min="1"
+                    @change="updateQuantity(item.id, item.quantity)"
+                    class="quantity-input"
+                  />
+                </p>
+                <button @click="removeItem(item.id)" class="remove-btn">
+                  Remove
+                </button>
+              </div>
+            </div>
+          </li>
+        </ul>
+        <div class="cart-summary">
+          <p>Total Items: {{ cartCount }}</p>
+          <p>Total Cost: ${{ totalCost }}</p>
+          <button @click="clearCart" class="clear-cart-btn">
+            Clear Cart
+          </button>
+          <button @click="goToCheckout" class="checkout-btn">
+            Proceed to Checkout
+          </button>
+        </div>
+      </div>
     </div>
 
     <footer class="footer">
@@ -71,32 +100,59 @@ export default {
   data() {
     return {
       cartItems: JSON.parse(localStorage.getItem('cart')) || [],
-      cartCount: JSON.parse(localStorage.getItem('cartCount')) || 0,
     };
   },
+  computed: {
+    cartCount() {
+      return this.cartItems.reduce((acc, item) => acc + item.quantity, 0);
+    },
+    totalCost() {
+      return this.cartItems.reduce(
+        (acc, item) => acc + item.price * item.quantity,
+        0
+      ).toFixed(2);
+    },
+  },
+  watch: {
+    cartItems: {
+      handler(updatedCart) {
+        localStorage.setItem('cart', JSON.stringify(updatedCart));
+        localStorage.setItem('cartCount', JSON.stringify(this.cartCount));
+      },
+      deep: true,
+    },
+  },
   methods: {
-    removeFromCart(itemId) {
-      this.cartItems = this.cartItems.filter(item => item.id !== itemId);
-      this.updateCart();
+    updateQuantity(itemId, quantity) {
+      const item = this.cartItems.find((item) => item.id === itemId);
+      if (item) {
+        item.quantity = quantity;
+      }
+    },
+    removeItem(itemId) {
+      this.cartItems = this.cartItems.filter((item) => item.id !== itemId);
     },
     clearCart() {
       this.cartItems = [];
-      this.updateCart();
     },
-    updateCart() {
-      this.cartCount = this.cartItems.reduce((acc, item) => acc + item.quantity, 0);
-      localStorage.setItem('cart', JSON.stringify(this.cartItems));
-      localStorage.setItem('cartCount', JSON.stringify(this.cartCount));
+    goToCheckout() {
+      localStorage.setItem('cartItemsForCheckout', JSON.stringify(this.cartItems));
+      this.$router.push('/checkout');
+    },
+    logout() {
+      localStorage.removeItem('token');
+      this.$router.push('/login');
     },
   },
 };
 </script>
 
 <style scoped>
+/* Styles for Cart.vue */
 .header {
-  background: #f8f9fa;
+  background-color: #f8f9fa;
   padding: 10px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .header-content {
@@ -112,13 +168,12 @@ export default {
 
 .brand-logo {
   width: 50px;
-  height: auto;
-  margin-right: 10px;
+  height: 50px;
 }
 
 .header-title {
-  font-size: 24px;
-  color: #333;
+  margin-left: 10px;
+  font-size: 1.5em;
 }
 
 .header-right {
@@ -131,74 +186,141 @@ export default {
   align-items: center;
 }
 
-.cart {
-  display: flex;
-  align-items: center;
-  margin-right: 15px;
-}
-
 .cart-icon {
-  width: 24px;
   height: 24px;
-  margin-right: 5px;
+  width: 24px;
 }
 
 .cart-badge {
-  background: #007bff;
-  color: #fff;
+  background-color: #ff0000;
+  color: #ffffff;
+  padding: 2px 8px;
   border-radius: 50%;
-  padding: 0 8px;
-  margin-left: 5px;
-  font-size: 14px;
-  line-height: 24px;
+  font-size: 12px;
+  margin-left: -10px;
+  margin-top: -10px;
 }
 
-.login a {
-  color: #007bff;
+.wishlist-btn {
   text-decoration: none;
+  color: inherit;
+}
+
+.logout button {
+  margin-left: 20px;
+  background: none;
+  border: 1px solid #007bff;
+  color: #007bff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.logout button:hover {
+  background-color: #007bff;
+  color: white;
 }
 
 .cart-content {
   padding: 20px;
 }
 
-.cart-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
+.empty-cart {
+  text-align: center;
 }
 
-.cart-item-image {
+.shop-link {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.cart-items ul {
+  list-style: none;
+  padding: 0;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.item-info {
+  display: flex;
+  align-items: center;
+}
+
+.item-image {
   width: 100px;
-  height: auto;
+  height: 100px;
   margin-right: 20px;
 }
 
-.cart-item-info {
-  flex: 1;
+.quantity-input {
+  width: 50px;
+  margin-left: 10px;
 }
 
-.cart-item-title {
-  font-size: 18px;
-}
-
-.cart-item-price {
-  font-size: 16px;
-  color: #333;
-}
-
-button {
-  background-color: #007bff;
-  color: #fff;
+.remove-btn {
+  background-color: #ff0000;
+  color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
+  padding: 5px 10px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
-footer {
-  background: #f8f9fa;
-  padding: 10px;
+.remove-btn:hover {
+  background-color: #c00000;
+}
+
+.cart-summary {
+  margin-top: 20px;
+  text-align: right;
+}
+
+.clear-cart-btn,
+.checkout-btn {
+  padding: 10px 20px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.clear-cart-btn {
+  background-color: #ff0000;
+  color: white;
+}
+
+.clear-cart-btn:hover {
+  background-color: #c00000;
+}
+
+.checkout-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.checkout-btn:hover {
+  background-color: #0056b3;
+}
+
+.footer {
   text-align: center;
+  padding: 10px 20px;
+  background-color: #f8f8f8;
+  color: #7f8c8d;
+  border-top: 1px solid #ddd;
+  margin-top: 20px;
 }
 </style>
