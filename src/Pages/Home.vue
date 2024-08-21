@@ -8,40 +8,40 @@
           <h1 class="header-title">SwiftCart</h1>
         </div>
         <div class="header-right">
-          <h3 class="wishlist">
+          <div class="header-item">
             <a href="/wishlist" class="wishlist-btn">
               <span class="wishlist-icon">🤍</span>
               <span class="wishlist-count">{{ wishlistCount }}</span>
               <span class="wishlist-text">Wishlist</span>
             </a>
-          </h3>
-          <div class="cart-container">
-            <div class="cart">
-              <a href="/cart">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="cart-icon"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                  />
-                </svg>
-              </a>
+          </div>
+          <div class="header-item">
+            <a href="/cart" class="cart-btn">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="cart-icon"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                />
+              </svg>
               <span class="cart-badge">{{ cartCount }}</span>
-            </div>
-            <div class="comparison">
-              <a href="/comparison" class="comparison-btn">Compare</a>
-            </div>
-            <div class="login"><a href="#">Login</a></div>
-            <div class="logout">
-              <button @click="logout">Logout</button>
-            </div>
+            </a>
+          </div>
+          <div class="header-item">
+            <a href="/comparison" class="comparison-btn">Compare</a>
+          </div>
+          <div class="header-item">
+            <a href="#" class="login-btn">Login</a>
+          </div>
+          <div class="header-item">
+            <button @click="logout" class="logout-btn">Logout</button>
           </div>
         </div>
       </div>
@@ -217,20 +217,19 @@ export default {
     applyDiscounts() {
       // Function to apply random discounts to 5 products
       const selectedProducts = [...this.products].sort(() => 0.5 - Math.random()).slice(0, 5);
-      const discountedProducts = selectedProducts.map(product => {
-        const discountPercentage = Math.floor(Math.random() * 50) + 10;
-        const discountedPrice = (product.price * (1 - discountPercentage / 100)).toFixed(2);
-        return {
-          ...product,
-          originalPrice: product.price.toFixed(2),
-          price: discountedPrice,
-          discountPercentage,
-        };
+      selectedProducts.forEach(product => {
+        product.discountPercentage = Math.floor(Math.random() * 31) + 10; // Random discount between 10% and 40%
+        product.originalPrice = product.price;
+        product.price -= product.price * (product.discountPercentage / 100);
       });
-      this.discountedProducts = discountedProducts;
-      localStorage.setItem('discountedProducts', JSON.stringify(discountedProducts));
+      this.discountedProducts = selectedProducts;
     },
-  },
+    logout() {
+      // Handle logout
+      localStorage.removeItem('token');
+      this.$router.push('/login');
+    }
+  }
 };
 </script>
 
@@ -243,6 +242,7 @@ export default {
   background-color: #007bff;
   color: white;
   padding: 10px;
+  border-bottom: 2px solid #0056b3;
 }
 
 .header-content {
@@ -251,8 +251,14 @@ export default {
   align-items: center;
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+}
+
 .brand-logo {
   height: 40px;
+  margin-right: 10px;
 }
 
 .header-title {
@@ -265,8 +271,16 @@ export default {
   align-items: center;
 }
 
-.cart-container, .wishlist {
-  margin-right: 20px;
+.header-item {
+  margin-left: 15px;
+  position: relative;
+}
+
+.cart-btn, .wishlist-btn, .comparison-btn, .login-btn, .logout-btn {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: white;
 }
 
 .cart-icon {
@@ -281,32 +295,60 @@ export default {
   border-radius: 50%;
   padding: 2px 6px;
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -5px;
+  right: -5px;
   font-size: 12px;
 }
 
+.wishlist-icon, .login-btn {
+  margin-right: 5px;
+}
+
+.logout-btn {
+  background-color: #dc3545;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background-color: #c82333;
+}
+
+.main-content {
+  padding: 20px;
+}
+
 .carousel-container {
-  margin: 20px 0;
+  margin-bottom: 20px;
 }
 
 .carousel {
   display: flex;
   overflow-x: scroll;
+  gap: 10px;
 }
 
 .carousel-item {
-  margin-right: 20px;
+  flex: 0 0 auto;
+  width: 200px;
   cursor: pointer;
+  text-align: center;
 }
 
 .carousel-image {
   width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.carousel-info {
+  margin-top: 10px;
 }
 
 .original-price {
   text-decoration: line-through;
-  color: grey;
 }
 
 .discounted-price {
@@ -317,8 +359,23 @@ export default {
   color: green;
 }
 
+.filter-sort-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.filter, .sort {
+  display: flex;
+  align-items: center;
+}
+
+.filter-select, .sort-select {
+  margin-left: 10px;
+}
+
 .product-list-container {
-  padding: 20px;
+  margin-top: 20px;
 }
 
 .product-list {
@@ -328,11 +385,11 @@ export default {
 }
 
 .product-card {
-  width: 200px;
   border: 1px solid #ddd;
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
-  cursor: pointer;
+  width: 200px;
+  text-align: center;
 }
 
 .product-image {
@@ -343,16 +400,16 @@ export default {
 
 .product-title {
   font-size: 18px;
-  margin: 10px;
+  margin: 10px 0;
 }
 
 .rating {
   display: flex;
+  justify-content: center;
 }
 
 .star {
-  font-size: 16px;
-  color: grey;
+  color: gold;
 }
 
 .star.filled {
@@ -360,27 +417,40 @@ export default {
 }
 
 .product-price {
-  font-size: 18px;
+  font-size: 16px;
   color: red;
 }
 
 .product-category {
   font-size: 14px;
-  color: grey;
+  color: #555;
 }
 
 .button-group {
   display: flex;
-  justify-content: space-between;
-  padding: 10px;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .add-to-cart, .favorites-btn {
   background-color: #007bff;
-  color: white;
   border: none;
-  padding: 10px;
+  color: white;
+  padding: 8px 12px;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.add-to-cart:hover, .favorites-btn:hover {
+  background-color: #0056b3;
+}
+
+.footer {
+  background-color: #007bff;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  margin-top: 20px;
 }
 </style>
