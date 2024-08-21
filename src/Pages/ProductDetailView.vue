@@ -48,7 +48,10 @@
         <div class="product-info">
           <h1 class="product-title">{{ product.title }}</h1>
           <p class="product-description">{{ product.description }}</p>
-          <p class="product-price">${{ product.price }}</p>
+          <p class="product-price">
+            <span v-if="product.originalPrice" class="original-price">${{ product.originalPrice }}</span>
+            ${{ product.price }}
+          </p>
           <div class="rating">
             <span class="star" :class="{ 'filled': product.rating >= 1 }">&#9733;</span>
             <span class="star" :class="{ 'filled': product.rating >= 2 }">&#9733;</span>
@@ -60,7 +63,7 @@
           <button @click="toggleCart">{{ isInCart ? 'Remove from Cart' : 'Add to Cart' }}</button>
           <button @click="toggleFavorites">{{ isFavorite ? 'Unfavorite' : 'Add to Favorites' }}</button>
           <button class="compare-btn" @click.stop="addToComparison(product)">
-                Compare
+            Compare
           </button>
           <button @click="goBackToHome">Back to Home</button>
         </div>
@@ -70,6 +73,9 @@
     <footer class="footer">
       <p>© 2024 SwiftCart. All rights reserved.</p>
     </footer>
+  </div>
+  <div v-else>
+    <p>Loading...</p>
   </div>
 </template>
 
@@ -234,15 +240,16 @@ export default {
 .product-detail {
   display: flex;
   align-items: center;
+  gap: 20px;
 }
 
 .product-image {
-  width: 300px;
-  height: auto;
+  max-width: 300px;
+  border-radius: 10px;
 }
 
 .product-info {
-  margin-left: 20px;
+  flex: 1;
 }
 
 .product-title {
@@ -256,6 +263,12 @@ export default {
 .product-price {
   font-size: 20px;
   color: #333;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #999;
+  margin-right: 10px;
 }
 
 .rating {
@@ -290,5 +303,11 @@ button {
 
 .compare-btn {
   background-color: #28a745;
+}
+
+.footer {
+  padding: 20px;
+  text-align: center;
+  border-top: 1px solid #ddd;
 }
 </style>

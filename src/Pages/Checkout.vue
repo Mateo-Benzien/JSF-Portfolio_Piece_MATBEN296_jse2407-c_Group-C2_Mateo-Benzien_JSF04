@@ -16,20 +16,7 @@
           <div class="cart-container">
             <div class="cart">
               <a href="/cart">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="cart-icon"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                  />
-                </svg>
+                <!-- Cart Icon -->
               </a>
               <span class="cart-badge">{{ cartCount }}</span>
             </div>
@@ -133,14 +120,12 @@ export default {
   },
   methods: {
     fillUserInfo() {
-      // Assuming user information is stored in localStorage
       const storedUser = JSON.parse(localStorage.getItem('user'));
       if (storedUser) {
         this.user = storedUser;
       }
     },
     placeOrder() {
-      // Simulate order placement
       const order = {
         user: this.user,
         items: this.cartItems,
@@ -149,23 +134,18 @@ export default {
         date: new Date().toLocaleString(),
       };
 
-      // Save order to local storage
       let orders = JSON.parse(localStorage.getItem('orders')) || [];
       orders.push(order);
       localStorage.setItem('orders', JSON.stringify(orders));
 
-      // Clear cart after order
       localStorage.removeItem('cart');
       localStorage.removeItem('cartCount');
 
-      // Redirect to confirmation page
       this.$router.push('/confirmation');
 
-      // Send confirmation email
       this.sendEmailConfirmation(order);
     },
     sendEmailConfirmation(order) {
-      // Simulate email sending (you would use an actual email service in production)
       console.log(`Email sent to ${order.user.email} with order details`, order);
     },
     logout() {
@@ -178,10 +158,13 @@ export default {
 
 <style scoped>
 /* Styles similar to Home.vue for consistency */
+.checkout-page {
+  font-family: Arial, sans-serif;
+}
+
 .header {
   background-color: #f8f9fa;
-  padding: 10px;
-  border-bottom: 1px solid #dee2e6;
+  padding: 1rem;
 }
 
 .header-content {
@@ -196,13 +179,12 @@ export default {
 }
 
 .brand-logo {
-  width: 50px;
-  height: 50px;
+  height: 40px;
 }
 
 .header-title {
-  margin-left: 10px;
-  font-size: 1.5em;
+  margin-left: 1rem;
+  font-size: 1.5rem;
 }
 
 .header-right {
@@ -210,89 +192,13 @@ export default {
   align-items: center;
 }
 
-.cart-container {
-  display: flex;
-  align-items: center;
-}
-
-.cart-icon {
-  height: 24px;
-  width: 24px;
-}
-
-.cart-badge {
-  background-color: #ff0000;
-  color: #ffffff;
-  padding: 2px 8px;
-  border-radius: 50%;
-  font-size: 12px;
-  margin-left: -10px;
-  margin-top: -10px;
-}
-
-.wishlist-btn {
-  text-decoration: none;
-  color: inherit;
-}
-
+.wishlist-btn,
+.comparison-btn,
+.login a,
 .logout button {
-  margin-left: 20px;
-  background: none;
-  border: 1px solid #007bff;
+  margin-left: 1rem;
+  text-decoration: none;
   color: #007bff;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.logout button:hover {
-  background-color: #007bff;
-  color: white;
-}
-
-.checkout-content {
-  padding: 20px;
-}
-
-.checkout-form {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.order-summary {
-  margin: 20px 0;
-  padding: 0;
-  list-style-type: none;
-}
-
-.order-summary li {
-  font-size: 16px;
-  margin-bottom: 10px;
-}
-
-.total-cost {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 20px;
 }
 
 .place-order-btn {
@@ -309,12 +215,22 @@ export default {
   background-color: #0056b3;
 }
 
+.checkout-content {
+  padding: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.order-summary {
+  list-style: none;
+  padding: 0;
+}
+
 .footer {
+  background-color: #f8f9fa;
+  padding: 1rem;
   text-align: center;
-  padding: 10px 20px;
-  background-color: #f8f8f8;
-  color: #7f8c8d;
-  border-top: 1px solid #ddd;
-  margin-top: 20px;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="app-container">
     <!-- Header Section -->
     <header class="header">
       <div class="header-content">
@@ -47,58 +47,80 @@
       </div>
     </header>
 
-    <!-- Filter and Sort Wrapper -->
-    <div class="filter-sort-container">
-      <!-- Filter Section -->
-      <div class="filter">
-        <select class="filter-select" v-model="selectedCategory" @change="filterProducts">
-          <option value="">Select Category</option>
-          <option value="all">All Categories</option>
-          <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
-        </select>
-      </div>
-      <!-- Sort Section -->
-      <div class="sort">
-        <label for="sort-select" class="sort-label">Sort by:</label>
-        <select id="sort-select" class="sort-select" v-model="selectedSort" @change="sortProducts">
-          <option value="">Default</option>
-          <option value="asc">Low to High</option>
-          <option value="desc">High to Low</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Product List Section -->
-    <div class="product-list-container">
-      <div class="product-list">
-        <div
-          class="product-card"
-          v-for="product in products"
-          :key="product.id"
-          @click="goToProduct(product.id)"
-        >
-          <img :src="product.image" :alt="product.title" class="product-image" />
-          <h2 class="product-title">{{ product.title }}</h2>
-          <div class="rating">
-            <span class="star" :class="{ 'filled': product.rating >= 1 }">&#9733;</span>
-            <span class="star" :class="{ 'filled': product.rating >= 2 }">&#9733;</span>
-            <span class="star" :class="{ 'filled': product.rating >= 3 }">&#9733;</span>
-            <span class="star" :class="{ 'filled': product.rating >= 4 }">&#9733;</span>
-            <span class="star" :class="{ 'filled': product.rating >= 5 }">&#9733;</span>
-          </div>
-          <p class="product-price">${{ product.price }}</p>
-          <p class="product-category">{{ product.category }}</p>
-          <div class="button-group">
-            <button class="add-to-cart" @click.stop="toggleCart(product)">
-              {{ isInCart(product.id) ? 'Remove from Cart' : 'Add to Cart' }}
-            </button>
-            <button class="favorites-btn" @click.stop="toggleWishlist(product)">
-              <span class="favorites-icon">{{ isInWishlist(product.id) ? '💖' : '🤍' }}</span>
-            </button>
+    <!-- Main Content Section -->
+    <main class="main-content">
+      <!-- Discounted Products Carousel -->
+      <div class="carousel-container" v-if="discountedProducts.length">
+        <h2>Discounted Products</h2>
+        <div class="carousel">
+          <div
+            class="carousel-item"
+            v-for="product in discountedProducts"
+            :key="product.id"
+            @click="goToProduct(product.id)"
+          >
+            <img :src="product.image" :alt="product.title" class="carousel-image" />
+            <div class="carousel-info">
+              <h3>{{ product.title }}</h3>
+              <p class="original-price"><s>${{ product.originalPrice }}</s></p>
+              <p class="discounted-price">${{ product.price }}</p>
+              <p class="discount-percentage">{{ product.discountPercentage }}% OFF</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <!-- Filter and Sort Wrapper -->
+      <div class="filter-sort-container">
+        <div class="filter">
+          <select class="filter-select" v-model="selectedCategory" @change="filterProducts">
+            <option value="">Select Category</option>
+            <option value="all">All Categories</option>
+            <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+          </select>
+        </div>
+        <div class="sort">
+          <label for="sort-select" class="sort-label">Sort by:</label>
+          <select id="sort-select" class="sort-select" v-model="selectedSort" @change="sortProducts">
+            <option value="">Default</option>
+            <option value="asc">Low to High</option>
+            <option value="desc">High to Low</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Product List Section -->
+      <div class="product-list-container">
+        <div class="product-list">
+          <div
+            class="product-card"
+            v-for="product in products"
+            :key="product.id"
+            @click="goToProduct(product.id)"
+          >
+            <img :src="product.image" :alt="product.title" class="product-image" />
+            <h2 class="product-title">{{ product.title }}</h2>
+            <div class="rating">
+              <span class="star" :class="{ 'filled': product.rating >= 1 }">&#9733;</span>
+              <span class="star" :class="{ 'filled': product.rating >= 2 }">&#9733;</span>
+              <span class="star" :class="{ 'filled': product.rating >= 3 }">&#9733;</span>
+              <span class="star" :class="{ 'filled': product.rating >= 4 }">&#9733;</span>
+              <span class="star" :class="{ 'filled': product.rating >= 5 }">&#9733;</span>
+            </div>
+            <p class="product-price">${{ product.price }}</p>
+            <p class="product-category">{{ product.category }}</p>
+            <div class="button-group">
+              <button class="add-to-cart" @click.stop="toggleCart(product)">
+                {{ isInCart(product.id) ? 'Remove from Cart' : 'Add to Cart' }}
+              </button>
+              <button class="favorites-btn" @click.stop="toggleWishlist(product)">
+                <span class="favorites-icon">{{ isInWishlist(product.id) ? '💖' : '🤍' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
 
     <!-- Footer Section -->
     <footer class="footer">
@@ -112,6 +134,7 @@ export default {
   data() {
     return {
       products: [],
+      discountedProducts: [],
       categories: [],
       selectedCategory: '',
       selectedSort: '',
@@ -128,137 +151,98 @@ export default {
     this.updateWishlistCount();
   },
   methods: {
-    async fetchProducts(category) {
-      let url = 'https://fakestoreapi.com/products';
-      if (category && category !== 'all') {
-        url += `/category/${category}`;
-      }
-      const response = await fetch(url);
-      const data = await response.json();
-      this.products = data.map((product) => ({
-        ...product,
-        rating: Math.floor(Math.random() * 5) + 1, // Random rating
-      }));
-      this.sortProducts();
+    fetchCategories() {
+      // Replace with your API call to fetch categories
+      this.categories = ['Electronics', 'Clothing', 'Accessories'];
     },
-    async fetchCategories() {
-      const response = await fetch('https://fakestoreapi.com/products/categories');
-      const data = await response.json();
-      this.categories = data;
+    async fetchProducts(category) {
+      // Replace with your API call to fetch products
+      let products = await fetch('https://fakestoreapi.com/products').then(res => res.json());
+      if (category && category !== 'all') {
+        products = products.filter(product => product.category === category);
+      }
+      this.products = products;
+      this.applyDiscounts();
     },
     filterProducts() {
       this.fetchProducts(this.selectedCategory);
     },
     sortProducts() {
-      if (this.selectedSort === 'asc') {
-        this.products.sort((a, b) => a.price - b.price);
-      } else if (this.selectedSort === 'desc') {
-        this.products.sort((a, b) => b.price - a.price);
-      }
+      this.products.sort((a, b) => {
+        if (this.selectedSort === 'asc') {
+          return a.price - b.price;
+        } else if (this.selectedSort === 'desc') {
+          return b.price - a.price;
+        }
+        return 0;
+      });
+    },
+    goToProduct(productId) {
+      this.$router.push(`/product/${productId}`);
     },
     toggleCart(product) {
-      if (this.isInCart(product.id)) {
-        this.removeFromCart(product.id);
+      const index = this.cart.findIndex(p => p.id === product.id);
+      if (index !== -1) {
+        this.cart.splice(index, 1);
       } else {
-        this.addToCart(product);
+        this.cart.push(product);
       }
-    },
-    addToCart(product) {
-      const existingProduct = this.cart.find(p => p.id === product.id);
-      if (existingProduct) {
-        existingProduct.quantity++;
-      } else {
-        this.cart.push({ ...product, quantity: 1 });
-      }
-      this.updateCart();
-      this.syncCartWithServer();
-    },
-    removeFromCart(productId) {
-      this.cart = this.cart.filter(product => product.id !== productId);
-      this.updateCart();
-      this.syncCartWithServer();
-    },
-    updateCart() {
-      this.cartCount = this.cart.reduce((acc, product) => acc + product.quantity, 0);
       localStorage.setItem('cart', JSON.stringify(this.cart));
-      localStorage.setItem('cartCount', JSON.stringify(this.cartCount));
-    },
-    syncCartWithServer() {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      fetch('/api/cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(this.cart),
-      }).catch(error => console.error('Failed to sync cart:', error));
-    },
-    updateCartCount() {
-      this.cartCount = this.cart.reduce((acc, product) => acc + product.quantity, 0);
-    },
-    isInCart(productId) {
-      return this.cart.some(product => product.id === productId);
+      this.updateCartCount();
     },
     toggleWishlist(product) {
-      if (this.isInWishlist(product.id)) {
-        this.removeFromWishlist(product.id);
+      const index = this.wishlist.findIndex(p => p.id === product.id);
+      if (index !== -1) {
+        this.wishlist.splice(index, 1);
       } else {
-        this.addToWishlist(product);
+        this.wishlist.push(product);
       }
-    },
-    addToWishlist(product) {
-      this.wishlist.push(product);
-      this.updateWishlist();
-      this.syncWishlistWithServer();
-    },
-    removeFromWishlist(productId) {
-      this.wishlist = this.wishlist.filter(product => product.id !== productId);
-      this.updateWishlist();
-      this.syncWishlistWithServer();
-    },
-    updateWishlist() {
-      this.wishlistCount = this.wishlist.length;
       localStorage.setItem('wishlist', JSON.stringify(this.wishlist));
-      localStorage.setItem('wishlistCount', JSON.stringify(this.wishlistCount));
+      this.updateWishlistCount();
     },
-    syncWishlistWithServer() {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      fetch('/api/wishlist', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(this.wishlist),
-      }).catch(error => console.error('Failed to sync wishlist:', error));
+    isInCart(productId) {
+      return this.cart.some(p => p.id === productId);
+    },
+    isInWishlist(productId) {
+      return this.wishlist.some(p => p.id === productId);
+    },
+    updateCartCount() {
+      this.cartCount = this.cart.length;
+      localStorage.setItem('cartCount', this.cartCount);
     },
     updateWishlistCount() {
       this.wishlistCount = this.wishlist.length;
+      localStorage.setItem('wishlistCount', this.wishlistCount);
     },
-    isInWishlist(productId) {
-      return this.wishlist.some(product => product.id === productId);
-    },
-    goToProduct(productId) {
-      this.$router.push({ path: `/product/${productId}` });
-    },
-    logout() {
-      localStorage.removeItem('token');
-      this.$router.push('/login');
+    applyDiscounts() {
+      // Function to apply random discounts to 5 products
+      const selectedProducts = [...this.products].sort(() => 0.5 - Math.random()).slice(0, 5);
+      const discountedProducts = selectedProducts.map(product => {
+        const discountPercentage = Math.floor(Math.random() * 50) + 10;
+        const discountedPrice = (product.price * (1 - discountPercentage / 100)).toFixed(2);
+        return {
+          ...product,
+          originalPrice: product.price.toFixed(2),
+          price: discountedPrice,
+          discountPercentage,
+        };
+      });
+      this.discountedProducts = discountedProducts;
+      localStorage.setItem('discountedProducts', JSON.stringify(discountedProducts));
     },
   },
 };
 </script>
 
 <style scoped>
+.app-container {
+  font-family: Arial, sans-serif;
+}
+
 .header {
-  background-color: #f8f9fa;
+  background-color: #007bff;
+  color: white;
   padding: 10px;
-  border-bottom: 1px solid #dee2e6;
 }
 
 .header-content {
@@ -267,19 +251,13 @@ export default {
   align-items: center;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-}
-
 .brand-logo {
-  width: 50px;
-  height: 50px;
+  height: 40px;
 }
 
 .header-title {
-  margin-left: 10px;
-  font-size: 1.5em;
+  font-size: 24px;
+  margin: 0;
 }
 
 .header-right {
@@ -287,58 +265,56 @@ export default {
   align-items: center;
 }
 
-.cart-container {
-  display: flex;
-  align-items: center;
+.cart-container, .wishlist {
+  margin-right: 20px;
 }
 
 .cart-icon {
-  height: 24px;
   width: 24px;
+  height: 24px;
+  color: white;
 }
 
 .cart-badge {
-  background-color: #ff0000;
-  color: #ffffff;
-  padding: 2px 8px;
+  background-color: red;
+  color: white;
   border-radius: 50%;
+  padding: 2px 6px;
+  position: absolute;
+  top: 0;
+  right: 0;
   font-size: 12px;
-  margin-left: -10px;
-  margin-top: -10px;
 }
 
-.wishlist-container {
+.carousel-container {
+  margin: 20px 0;
+}
+
+.carousel {
   display: flex;
-  align-items: center;
+  overflow-x: scroll;
 }
 
-.wishlist-btn {
-  text-decoration: none;
-  color: inherit;
-}
-
-.wishlist-icon {
-  font-size: 20px;
-  margin-right: 5px;
-}
-
-.wishlist-count {
-  font-weight: bold;
-}
-
-.logout button {
-  margin-left: 20px;
-  background: none;
-  border: 1px solid #007bff;
-  color: #007bff;
-  padding: 5px 10px;
-  border-radius: 4px;
+.carousel-item {
+  margin-right: 20px;
   cursor: pointer;
 }
 
-.logout button:hover {
-  background-color: #007bff;
-  color: white;
+.carousel-image {
+  width: 100%;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: grey;
+}
+
+.discounted-price {
+  color: red;
+}
+
+.discount-percentage {
+  color: green;
 }
 
 .product-list-container {
@@ -346,98 +322,65 @@ export default {
 }
 
 .product-list {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 20px;
 }
 
 .product-card {
-  padding: 20px; /* Increased padding for a bit more height */
+  width: 200px;
   border: 1px solid #ddd;
-  border-radius: 5px;
-  text-align: center;
-  transition: box-shadow 0.2s;
-  background-color: #fff;
-}
-
-.product-card:hover {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
 }
 
 .product-image {
   width: 100%;
-  height: 300px; /* Increased height for a taller image */
+  height: 150px;
   object-fit: cover;
 }
 
 .product-title {
-  font-size: 16px;
-  margin: 10px 0;
+  font-size: 18px;
+  margin: 10px;
 }
 
 .rating {
   display: flex;
-  justify-content: center;
-  margin: 10px 0;
 }
 
 .star {
-  font-size: 14px;
-  margin: 0 2px;
+  font-size: 16px;
+  color: grey;
 }
 
 .star.filled {
-  color: #f39c12;
+  color: gold;
 }
 
 .product-price {
   font-size: 18px;
-  font-weight: bold;
-  color: #2c3e50;
+  color: red;
 }
 
 .product-category {
   font-size: 14px;
-  color: #7f8c8d;
-  margin-bottom: 10px;
+  color: grey;
 }
 
 .button-group {
   display: flex;
   justify-content: space-between;
+  padding: 10px;
 }
 
-.add-to-cart,
-.favorites-btn {
-  padding: 5px 10px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.add-to-cart {
+.add-to-cart, .favorites-btn {
   background-color: #007bff;
-  color: #fff;
-}
-
-.add-to-cart:hover {
-  background-color: #0463c9;
-}
-
-.favorites-btn {
-  background-color: #fff;
-  border: 1px solid #ddd;
-}
-
-.favorites-btn:hover {
-  background-color: #f8f8f8;
-}
-
-.footer {
-  text-align: center;
-  padding: 10px 20px;
-  background-color: #f8f8f8;
-  color: #7f8c8d;
-  border-top: 1px solid #ddd;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 </style>
